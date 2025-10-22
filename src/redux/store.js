@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import filterReducer from "./slices/filterSlice"; // Здесь мы принимаем экспорт слайсов
+import cartReducer from "./slices/cartSlice";
+import pizzaReducer from "./slices/pizzaSlice";
 // Redux нужен, чтобы не было перерендера всех компонентов(такое происходит при использовании useContext при изменение ?state?), перерендер только в определенном компоненте при Redux
 export const store = configureStore({
-  reducer: { filterReducer }, // вот это название должно быть в const categoryID = useSelector((state) => state.categoryReducer.value);
+  reducer: { filterReducer, cartReducer, pizzaReducer }, // вот это название должно быть в const categoryID = useSelector((state) => state.categoryReducer.value);
 }); // redux-хранилище
 
 // console.log(store.dispatch);

@@ -24,7 +24,7 @@ const Pagination = () => {
       pageRangeDisplayed={4} // ?
       pageCount={3} // Число сколько страниц. У нас 3. Но вообще backend может возвращать эту инфу и если бы Mockapi возвращал бы эту инфу, а не был худшим backend'ом, то мы бы ее сюда вставляли вместо 3 и при увеличении товара, наша переменная автоматом менялась бы.
       renderOnZeroPageCount={null} // ?
-      initialPage={currentPage - 1}
+      forcePage={currentPage - 1}
     />
   );
 };

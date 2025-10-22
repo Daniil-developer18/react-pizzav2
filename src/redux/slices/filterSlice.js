@@ -34,10 +34,18 @@ export const filterSlice = createSlice({
     setCurrentPage(state, action) {
       state.currentPage = action.payload;
     },
+    resetState(state) {
+      state.categoryID = 0;
+      state.currentPage = 1;
+      state.activeSort = {
+        name: "популярности",
+        sortProperty: "rating",
+      };
+    },
   },
 });
 
-export const { setCategoryID, setActiveSort, setCurrentPage } =
+export const { setCategoryID, setActiveSort, setCurrentPage, resetState } =
   filterSlice.actions; // actions - действия. Отвечает за выполнение методов(например increment, decrement)
 // По сути для вызова этого метода нужно его экспортировать, а дальше смотри Main.jsx
 export default filterSlice.reducer; // reducer, который будет выполнять логику обработки всего нашего state(методов) - изменение state

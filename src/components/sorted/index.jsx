@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux"; // useSelector - хук, который позволяет вытаскивать из хранилища какой-то state
 import { setActiveSort } from "../../redux/slices/filterSlice";
 export const list = [
@@ -6,8 +6,8 @@ export const list = [
   { name: "популярности ↑", sortProperty: "-rating" }, // asc - по возрастанию
   { name: "цене ↓", sortProperty: "price" },
   { name: "цене ↑", sortProperty: "-price" },
-  { name: "алфавиту ↓", sortProperty: "title" },
-  { name: "алфавиту ↑", sortProperty: "-title" },
+  { name: "алфавиту ↓", sortProperty: "-title" },
+  { name: "алфавиту ↑", sortProperty: "title" },
 ];
 
 function Sorted() {
@@ -16,17 +16,48 @@ function Sorted() {
   // даже если меняется не activeSort а что то другое внутри этого filterReducer, поэтому мы именно говорим ОТСЛЕЖИВАЙ activeSort для перерендера этого компонента
   const dispatch = useDispatch();
 
+  const sortRef = useRef();
+
   const [openSort, setOpenSort] = useState(false);
   // здесь могло быть const sortName = list[activeSort]
 
-  const onClickSomeSort = (obj) => {
-    // передает в родительский компонент объект
-    dispatch(setActiveSort(obj)); // передает в родительский компонент объект
-    setOpenSort(false);
-  };
+  // const onClickSomeSort = (obj) => {
+  //   // передает в родительский компонент объект
+  //   dispatch(setActiveSort(obj)); // передает в родительский компонент объект
+  // убрали отсюда setOpenSort(false);
+  // };
+
+  // обработчик клика на весь body(dom), чтоб проверять был клик внутри поп-апа или вне него
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      //console.log(event.composedPath()); // возвращает объект addEventListener и там есть composedPath(), нужно проверить, есть ли в нем там наш div class="sort",
+      // а div class="sort" мы узнаем из sortRef.current
+      if (event.composedPath().includes(sortRef.current)) {
+        // клик на sort? если true, то станет false, не отработает,
+        // если false, так как кликнули не на sort,то станет true и отработает закрытие(не конфликтует с другими действиями),
+        // если не делать логическое НЕ, то будет конфликт при нажатии onClick, даже если сделать через else, то все равно будет возникать
+        // конфликт и при нажатии на выбор цене, популярности, не будет закрываться, как мы зудмали при onClickSomeSort
+        setOpenSort((prev) => {
+          // в prev приходит всегда актуальное значение моего openSort
+          return !prev; // вовзращаем перевернутое актуальное значение, пришел openSort = true(актуальное значение), вернули openSort=false
+        });
+      } else {
+        setOpenSort(false); // если тыкнули вне sort, то закрываем pop-up окно
+      }
+      //console.log("check");
+    }; // создаем handleClickOutside, чтобы использовать его и в addEventListener при монтировании, и в removeEventListener при размонтировании
+    document.addEventListener("click", handleClickOutside); // addEventListener - метод, который "подписывает" функцию-обработчик на событие
+    // у элемента dom, когда событие произойдет, обработчик вызовется, event - строка названия события("click", "scroll", "keydown")
+    return () => {
+      // когда мы уходим например с этой страницы на другую, происходит unmount и только тогда срабатывает return
+      document.removeEventListener("click", handleClickOutside); // при unmound и срабатывании return, у нас удалится обработчик событий, это делается
+      // для того, чтобы каждый раз переходя с одной страницы на другую, и так несколько раз, не накладывались обработчики событий по не сколько штук или даже
+      // десяток штук на одно и то же действие
+    };
+  }, []); // return в конце useEffect нужен, чтобы он сработал тогда, когда компонент будет размонтирован
 
   return (
-    <div className="sort">
+    <div ref={sortRef} className="sort">
       <div className="sort__label">
         <svg
           width="10"
@@ -41,7 +72,7 @@ function Sorted() {
           />
         </svg>
         <b>Сортировка по:</b>
-        <span onClick={() => setOpenSort(!openSort)}>{activeSort.name}</span>
+        <span>{activeSort.name}</span>
       </div>
       {openSort && ( // Выводим, показываем пользователю <div> ... </div> при
         // условии если openSort === true с помощью &&
@@ -52,7 +83,7 @@ function Sorted() {
             {list.map((obj) => (
               <li
                 key={obj.name}
-                onClick={() => onClickSomeSort(obj)} // передает в функцию
+                onClick={() => dispatch(setActiveSort(obj))} // передает в функцию
                 className={
                   activeSort.sortProperty === obj.sortProperty && "active"
                 }

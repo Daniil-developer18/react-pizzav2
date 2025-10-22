@@ -1,16 +1,42 @@
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addItem } from "../../redux/slices/cartSlice";
 const typeNames = ["тонкое", "традиционное"]; // если константа статичная, ее нужно выносить из функции
 
 function PizzaBlock(props) {
   // вместо того, чтобы писать props и потом доставать из него props.title и props.price, мы
   // можем прокидывать сразу title и price, вместо (price) мы пишем ({title, price}) и тогда мы можем сразу прокидывать title и price без props
   // Это называется деструктуризация
-  const [count, setCount] = useState(0);
+
   const [activeType, setActiveType] = useState(props.types[0]); // props.types - возвращаем нам [0, 1] или [0] или [1]
   // и чтобы обратиться к ПЕРВОМУ ЭЛЕМЕНТУ В МАССИВЕ, мы просто юзаем НУЛЕВОЙ ИНДЕКС, ведь нулевой индекс - это всегда первый
   // элемент в массиве. Данил умнич. Даниил не умнич.
   const [activeSize, setActiveSize] = useState(0);
+  const items = useSelector((state) => state.cartReducer.items);
+  const dispatch = useDispatch();
 
+  const onClickAdd = () => {
+    const item = {
+      id: props.id,
+      title: props.title,
+      price: props.price,
+      imageUrl: props.imageUrl,
+      type: typeNames[activeType],
+      size: props.sizes[activeSize],
+    };
+    dispatch(addItem(item));
+  };
+
+  const getPizzaCount = () => {
+    return (
+      items.find(
+        (item) =>
+          item.id === props.id &&
+          item.type === typeNames[activeType] &&
+          item.size === props.sizes[activeSize]
+      )?.count ?? 0 // ?. - если есть свойство count, то обратиться к нему, если нет, то => ??
+    );
+  };
   //console.log(props.title, props.price, props.imageUrl, props.sizes);
 
   return (
@@ -54,7 +80,9 @@ function PizzaBlock(props) {
         <div className="pizza-block__price">{`от ${props.price} ₽`}</div>
         <button
           className="button button--outline button--add"
-          onClick={() => setCount(count + 1)}
+          onClick={() => {
+            onClickAdd();
+          }}
         >
           <svg
             width="12"
@@ -69,7 +97,7 @@ function PizzaBlock(props) {
             />
           </svg>
           <span>Добавить</span>
-          <i>{count}</i>
+          {getPizzaCount() > 0 && <i>{getPizzaCount()}</i>}
         </button>
       </div>
     </div>
