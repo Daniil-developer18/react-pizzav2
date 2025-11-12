@@ -1,11 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import filterReducer from "./slices/filterSlice"; // Здесь мы принимаем экспорт слайсов
 import cartReducer from "./slices/cartSlice";
-import pizzaReducer from "./slices/pizzaSlice";
+import { useSelector } from "react-redux";
 // Redux нужен, чтобы не было перерендера всех компонентов(такое происходит при использовании useContext при изменение ?state?), перерендер только в определенном компоненте при Redux
 export const store = configureStore({
-  reducer: { filterReducer, cartReducer, pizzaReducer }, // вот это название должно быть в const categoryID = useSelector((state) => state.categoryReducer.value);
+  reducer: { filterReducer, cartReducer }, // вот это название должно быть в const categoryID = useSelector((state) => state.categoryReducer.value);
 }); // redux-хранилище
+
+export type RootState = ReturnType<typeof store.getState>; // получение типа/типов всего хранилища, разеделенный по редьюсерам
+export const useAppSelector = useSelector.withTypes<RootState>();
 
 // console.log(store.dispatch);
 // console.log(configureStore);

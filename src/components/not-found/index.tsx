@@ -1,6 +1,7 @@
 import React from "react";
 
 import styles from "./NotFoundBlock.module.scss";
+import { Link } from "react-router-dom";
 
 const NotFoundBlock = () => {
   return (
@@ -14,6 +15,9 @@ const NotFoundBlock = () => {
       <p className={styles.description}>
         К сожалению, данная страница отсутствует в нашем магазине
       </p>
+      <Link className={styles.backToHome} to="/">
+        Перейти на главную страницу
+      </Link>
     </div>
   );
 };

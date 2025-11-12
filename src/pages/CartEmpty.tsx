@@ -1,5 +1,5 @@
 import cartEmptyImg from "../assets/img/empty-cart.png";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const CartEmpty = () => {
   const navigate = useNavigate();
@@ -16,9 +16,9 @@ const CartEmpty = () => {
             Для того, чтобы заказать пиццу, перейди на главную страницу.
           </p>
           <img src={cartEmptyImg} alt="Empty cart" />
-          <Link onClick={() => navigate(-1)} className="button button--black">
+          <button onClick={() => navigate(-1)} className="button button--black">
             <span>Вернуться назад</span>
-          </Link>
+          </button>
         </div>
       </div>
     </>

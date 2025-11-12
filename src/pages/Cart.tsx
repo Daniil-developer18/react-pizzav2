@@ -1,7 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import {
   clearItems,
   removeItem,
@@ -12,16 +10,18 @@ import {
   useCountPizzas,
   useTotalPrice,
 } from "../redux/selectors/cartSelectors";
+import { useAppSelector } from "../redux/store";
 
-import CartEmpty from ".//CartEmpty.jsx";
+import CartEmpty from "./CartEmpty";
 
 // в Link onClick можно прокидывать, всё будет отрабатываться и функция будет работать переданная в onClick
 // useNavigate нужно приравнивать к переменной, например к navigate, можно использовать navigate(-1) - это будет возвращение на прошлую страницу
 // Лучше использовать Link, а не button с useNavigate, потому что так будет индексироваться твоя страница в поисковике и ЭТО ОЧЕНЬ ВАЖНО, чтобы было продвижение страницы
 // по button ботики не понимают, а по Link, который по сути <a> ботики понимают и продвигают
+
 const Cart = () => {
   const navigate = useNavigate();
-  const items = useSelector((state) => state.cartReducer.items);
+  const items = useAppSelector((state) => state.cartReducer.items);
   const countPizzas = useCountPizzas();
   const totalPrice = useTotalPrice();
   const dispatch = useDispatch();
@@ -236,7 +236,7 @@ const Cart = () => {
             </span>
           </div>
           <div className="cart__bottom-buttons">
-            <Link
+            <button
               onClick={() => navigate(-1)}
               className="button button--outline button--add go-back-btn"
             >
@@ -256,7 +256,7 @@ const Cart = () => {
                 ></path>
               </svg>
               <span>Вернуться назад</span>
-            </Link>
+            </button>
             <div className="button pay-btn">
               <span>Оплатить сейчас</span>
             </div>

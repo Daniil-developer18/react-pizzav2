@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Categories from "../components/categories";
 import Sorted from "../components/sorted";
 import PizzaBlock from "../components/pizza-block";
@@ -6,11 +6,13 @@ import Skeleton from "../components/pizza-block/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Pagination from "../components/pagination/Pagination";
-import { SearchContext } from "../components/main-component/Main";
-import { useSelector, useDispatch } from "react-redux"; // useSelector - хук, который позволяет вытаскивать из хранилища какой-то state
+//import { SearchContext } from "../components/main-component/Main";
+import { useDispatch } from "react-redux"; // useSelector - хук, который позволяет вытаскивать из хранилища какой-то state
 import { setCategoryID } from "../redux/slices/filterSlice";
 import qs from "qs"; // чтобы вшить наши параметры в адресную строчку, чтобы спарсить параметры или сгенерировать их
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../redux/store";
+import { Pizza } from "../types/pizza";
 
 //   {/*{ searchValue } */}
 const Home = () => {
@@ -18,8 +20,12 @@ const Home = () => {
   // useRef используется и для хранения state, при изменении этого state(ref) не запускается перерендер
   // useRef НЕ вызывает перерендер при изменении его значения. Это ключевое отличие от useState.
 
-  const activeSort = useSelector((state) => state.filterReducer.activeSort); // МОЖНО ОБЪЕДИНИТЬ В ОДИН useSlector и activeSort и categoryID
-  const categoryID = useSelector((state) => state.filterReducer.categoryID); // следит за изменением Reducer, меняет categoryID, categoryID внутри filterReducer - это ключ в initialState в slice
+  // const activeSort = useAppSelector(
+  //   (state) => state.filterReducer.activeSort
+  // ); // МОЖНО ОБЪЕДИНИТЬ В ОДИН useSlector и activeSort и categoryID
+  // const categoryID = useAppSelector(
+  //   (state) => state.filterReducer.categoryID
+  // ); // следит за изменением Reducer, меняет categoryID, categoryID внутри filterReducer - это ключ в initialState в slice
   // в переменную categoryID передаем state, который хранится в slice, именно значение
   // const { categoryID, activeSort } = useSelector( // useSelector подписывает компонент на Redux-хранилище(store) и каждый раз вызывает функцию-селектор при изменении state
   //   (state) => state.filterReducer
@@ -31,10 +37,19 @@ const Home = () => {
   //   sortProperty: "rating",
   // }); // замена объекта {} из этого компонента через set, но по данным, приходящим из дочернего компонента
 
-  const currentPage = useSelector((state) => state.filterReducer.currentPage);
+  // const currentPage = useAppSelector(
+  //   (state) => state.filterReducer.currentPage
+  // );
   // const [currentPage, setCurrentPage] = useState(1); // для Пагинации state
 
-  const { searchValue } = useContext(SearchContext); // при изменении SearchContext перерисовка там, где нужно
+  //const { searchValue } = useContext(SearchContext); // при изменении SearchContext перерисовка там, где нужно
+  // const searchValue = useAppSelector(
+  //   (state) => state.filterReducer.searchValue
+  // );
+
+  const { activeSort, categoryID, currentPage, searchValue } = useAppSelector(
+    (state) => state.filterReducer
+  );
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -65,12 +80,12 @@ const Home = () => {
   const order = activeSort.sortProperty.includes("-") ? "asc" : "desc";
   const search = searchValue ? searchValue : ""; // создали переменную для поиска ПИЦЦЫ через backend используя searchValue, который в input
 
-  const { isPending, error, data } = useQuery({
+  const { isPending, error, data } = useQuery<Pizza[]>({
     // data принимает мой response.json()
-    queryKey: ["pizzas", categoryID, activeSort, searchValue, currentPage], // ключ по которому useQuery в своей реализации для идентификации задает к запросу для кэша(чтобы сохранять кэш, пока не закроешь страницу, данные будут загружены и сразу будут появляться, но как только закроешь страницу, кэш удалиться и по новой будет загружаться)
+    queryKey: [categoryID, activeSort, searchValue, currentPage], // ключ по которому useQuery в своей реализации для идентификации задает к запросу для кэша(чтобы сохранять кэш, пока не закроешь страницу, данные будут загружены и сразу будут появляться, но как только закроешь страницу, кэш удалиться и по новой будет загружаться)
     queryFn: () =>
       axios
-        .get(`https://68d42667214be68f8c688e15.mockapi.io/items`, {
+        .get<Pizza[]>(`https://68d42667214be68f8c688e15.mockapi.io/items`, {
           params: {
             category: category, // категории очевидно
             sortBy: sortBy, // сортировка очевидно
@@ -109,7 +124,7 @@ const Home = () => {
       <div className="content__top">
         <Categories
           categoryID={categoryID} // потом мы передаем его обратно в дочерний компонент
-          onClickCategory={(index) => {
+          onClickCategory={(index: number) => {
             // принимает в себя индекс из дочернего компонента
             dispatch(setCategoryID(index)); // меняет принимаемый в себя индекс из дочернего компонента dispatch(test())
           }}

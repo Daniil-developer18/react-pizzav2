@@ -1,12 +1,16 @@
-function Categories({ categoryID, onClickCategory }) {
-  const categories = [
-    "Все",
-    "Мясные",
-    "Вегетарианская",
-    "Гриль",
-    "Острые",
-    "Закрытые",
-  ];
+interface CategoriesProps {
+  categoryID: number;
+  onClickCategory: (index: number) => void; // void = нет вовзрата return
+}
+const categories = [
+  "Все",
+  "Мясные",
+  "Вегетарианская",
+  "Гриль",
+  "Острые",
+  "Закрытые",
+];
+const Categories = ({ categoryID, onClickCategory }: CategoriesProps) => {
   return (
     <div className="categories">
       <ul>
@@ -30,7 +34,7 @@ function Categories({ categoryID, onClickCategory }) {
       </ul>
     </div>
   );
-}
+};
 
 export default Categories;
 

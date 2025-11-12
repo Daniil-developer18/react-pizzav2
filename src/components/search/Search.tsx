@@ -1,18 +1,23 @@
-import { useContext, useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, ChangeEvent } from "react";
 import styles from "./Search.module.scss";
-import { SearchContext } from "../main-component/Main"; // вытаскиываем с помощью деструктуризации
-import { debounce } from "lodash";
+//import { SearchContext } from "../main-component/Main"; // вытаскиываем с помощью деструктуризации
+
+import debounce from "lodash/debounce";
+import { setSearchValue } from "../../redux/slices/filterSlice";
+import { useDispatch } from "react-redux";
 
 // { searchValue, setSearchValue }
 const Search = () => {
   const [value, setValue] = useState("");
-  const { setSearchValue } = useContext(SearchContext); // не будет работать, пока мы не экспортируем наш SerchContext из main. Нужно экспортировать сначала из main наш SearchContext
-  const inputRef = useRef(); // ссылку на input должна пойти в ref в input, служит для передачи в ref где-либо для нахождения нашего input
+  // const { setSearchValue } = useContext(SearchContext); // не будет работать, пока мы не экспортируем наш SerchContext из main. Нужно экспортировать сначала из main наш SearchContext
+  const dispatch = useDispatch();
+
+  const inputRef = useRef<HTMLInputElement>(null); // ссылку на input должна пойти в ref в input, служит для передачи в ref где-либо для нахождения нашего input
   // useRef позволяет ссылаться на значение, не необходимое для рендеринга
   const onClickClear = () => {
     setValue("");
-    setSearchValue("");
-    inputRef.current.focus(); // создали current в inputRef РАННЕЕ и обратились к этому свойству current и задали метод focus(), чтобы у нас оставался фокус на input
+    dispatch(setSearchValue(""));
+    inputRef.current?.focus(); // создали current в inputRef РАННЕЕ и обратились к этому свойству current и задали метод focus(), чтобы у нас оставался фокус на input
     // при вызове onClickClear. Правильное обращение к dom-элементам через useRef, создаем переменную например buttonRef(чтоб нам было более понятнее) = useRef() - юзаем хук useRef
     // далее прокидываем в JSX-разметке внутрь тега button: ref={buttonRef} ДЛЯ СОЗДАНИЯ current, далее можно совершать какие-либо действия, например:
     // buttonRef.current.METHOD(), METHOD - какой-то метод, например focus() или
@@ -21,17 +26,20 @@ const Search = () => {
     // не через react обращаем к dom-элементу, а обращаемся через javascript document, есть вероятность, что этот элемент может не найтись и произойдет какая-то ошибка
     // может не отрендериться, если хочешь работать в react с dom-элементами и взаимодействовать с ними, что-то менять, фокус сделать, для этого исплоьзуется
     // специальный хук - useRef
+
+    // inputRef.current?.focus(); - ?. - Optional chaining, означает: если inputRef.current не null/undefined,
+    // вызвать focus(), иначе ничего не делать.
   };
 
   const updateSearchValue = useCallback(
     // сохранил ссылку на функцию с помощью useCallback / вернет функцию, useEffect не вернет функцию, он сделает просто вызов
-    debounce((value) => {
-      setSearchValue(value);
+    debounce((value: string) => {
+      dispatch(setSearchValue(value));
     }, 250),
-    [setSearchValue] // создай один раз и больше не пересоздавай, поэтому одна ссылка на эту функцию будет при перерендере
+    [dispatch] // создай один раз и больше не пересоздавай, поэтому одна ссылка на эту функцию будет при перерендере
   ); // useCallback сохраняет ссылку. И в связке с debounce, debounce работает корректно и выполняет тот смысл, который мы хотим увидеть, а то есть
   // откладывать тело функции на n-кол-во времени при изменении актуального параметра, потому что ссылается на старую ссылку, которую создает
-  // useCallback
+  // useCallback, в useCallback изменили на [dispatch]
 
   // посмотреть видосы по useCallback. useCallback принимает в себя функцию и массив зависимостей, тем самым возвращая оптимизированную(мемоизирвоанную) функцию
   // не обновляя её до момента пока не изменится массив зависимостей. При пустом массиве зависимостей, функция никогда не будет обновлена. Нужно просто запомнить, что:
@@ -49,7 +57,7 @@ const Search = () => {
   // useCallback ВЕРНЕТ функцию. Создаст её, вернет, и поместит в debounceSearch. При перерендере он не будет ее снова делать
   // он создаст эту функцию, вернет ее один раз и эта функция будет существовать и не изменяться, при перендере он не будет снова делать
 
-  const onChangeValue = (event) => {
+  const onChangeValue = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
     updateSearchValue(event.target.value);
   };

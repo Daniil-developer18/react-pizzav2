@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector, useDispatch } from "react-redux"; // useSelector - хук, который позволяет вытаскивать из хранилища какой-то state
+import { useDispatch } from "react-redux"; // useSelector - хук, который позволяет вытаскивать из хранилища какой-то state
 import { setActiveSort } from "../../redux/slices/filterSlice";
-export const list = [
+import classNames from "classnames";
+import { useAppSelector } from "../../redux/store";
+import { Sort } from "../../redux/types/filter";
+
+export const list: Sort[] = [
   { name: "популярности ↓", sortProperty: "rating" }, // desc - по убыванию
   { name: "популярности ↑", sortProperty: "-rating" }, // asc - по возрастанию
   { name: "цене ↓", sortProperty: "price" },
@@ -11,12 +15,14 @@ export const list = [
 ];
 
 function Sorted() {
-  const activeSort = useSelector((state) => state.filterReducer.activeSort); // вытаскиваем информацию о сортировке с помощью redux, следит за изменение activeSort, компонент перерисовывается
+  const activeSort = useAppSelector((state) => state.filterReducer.activeSort); // вытаскиваем информацию о сортировке с помощью redux, следит за изменение activeSort, компонент перерисовывается
   // получает новые данные, activeSort уже имеет другое значение. У меня в filterReducer могут быть много reducerов, и если я буду писать state.filterReducer, то у меня будет перерендер этого компонента
   // даже если меняется не activeSort а что то другое внутри этого filterReducer, поэтому мы именно говорим ОТСЛЕЖИВАЙ activeSort для перерендера этого компонента
   const dispatch = useDispatch();
 
-  const sortRef = useRef();
+  const sortRef = useRef<HTMLDivElement>(null); // в sortRef изначально-то ничего нету, потому что (), а так передавать в TS нельзя, инача будет ошибка,
+  // TS undefined не любит, на самом деле в sortRef будет HTMLDivElement, но изначально там ничего нет, а udnefined TS не пойдет, надо что-то передать
+  // что он ожидает, мы передаем null, ошибка уйдет, всё хорошо. Изначально ничего нет - null передали, TS не ругается.
 
   const [openSort, setOpenSort] = useState(false);
   // здесь могло быть const sortName = list[activeSort]
@@ -29,10 +35,10 @@ function Sorted() {
 
   // обработчик клика на весь body(dom), чтоб проверять был клик внутри поп-апа или вне него
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       //console.log(event.composedPath()); // возвращает объект addEventListener и там есть composedPath(), нужно проверить, есть ли в нем там наш div class="sort",
       // а div class="sort" мы узнаем из sortRef.current
-      if (event.composedPath().includes(sortRef.current)) {
+      if (sortRef.current && event.composedPath().includes(sortRef.current)) {
         // клик на sort? если true, то станет false, не отработает,
         // если false, так как кликнули не на sort,то станет true и отработает закрытие(не конфликтует с другими действиями),
         // если не делать логическое НЕ, то будет конфликт при нажатии onClick, даже если сделать через else, то все равно будет возникать
@@ -84,9 +90,9 @@ function Sorted() {
               <li
                 key={obj.name}
                 onClick={() => dispatch(setActiveSort(obj))} // передает в функцию
-                className={
-                  activeSort.sortProperty === obj.sortProperty && "active"
-                }
+                className={classNames({
+                  active: activeSort.sortProperty === obj.sortProperty,
+                })}
               >
                 {obj.name}
               </li>

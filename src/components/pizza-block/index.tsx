@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addItem } from "../../redux/slices/cartSlice";
+import { Link } from "react-router-dom";
+import { useAppSelector } from "../../redux/store";
+import { Pizza } from "../../types/pizza";
+
 const typeNames = ["тонкое", "традиционное"]; // если константа статичная, ее нужно выносить из функции
 
-function PizzaBlock(props) {
+const PizzaBlock = (props: Pizza) => {
   // вместо того, чтобы писать props и потом доставать из него props.title и props.price, мы
   // можем прокидывать сразу title и price, вместо (price) мы пишем ({title, price}) и тогда мы можем сразу прокидывать title и price без props
   // Это называется деструктуризация
@@ -12,7 +16,7 @@ function PizzaBlock(props) {
   // и чтобы обратиться к ПЕРВОМУ ЭЛЕМЕНТУ В МАССИВЕ, мы просто юзаем НУЛЕВОЙ ИНДЕКС, ведь нулевой индекс - это всегда первый
   // элемент в массиве. Данил умнич. Даниил не умнич.
   const [activeSize, setActiveSize] = useState(0);
-  const items = useSelector((state) => state.cartReducer.items);
+  const items = useAppSelector((state) => state.cartReducer.items);
   const dispatch = useDispatch();
 
   const onClickAdd = () => {
@@ -41,7 +45,9 @@ function PizzaBlock(props) {
 
   return (
     <div className="pizza-block">
-      <img className="pizza-block__image" src={props.imageUrl} alt="Pizza" />
+      <Link to={`pizza/${props.id}`}>
+        <img className="pizza-block__image" src={props.imageUrl} alt="Pizza" />
+      </Link>
       <h4 className="pizza-block__title">{props.title}</h4>
       {/* Вот тут сразу можно писать title вместо props.title */}
       <div className="pizza-block__selector">
@@ -102,7 +108,7 @@ function PizzaBlock(props) {
       </div>
     </div>
   );
-}
+};
 
 export default PizzaBlock;
 
